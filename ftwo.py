@@ -16,24 +16,35 @@ class FileRename():
 
     def change_name(self, parsed_args):
         """
-        Replacing string within the file name, with possible args below as part of a string;
-        'whole' - exact, to specify that the full file name has to be exact match.
-        'exact' - whole, to specify that the whole name is to be replaced if any part of the string produces match.
-        If 'exact' is True, this by logic makes 'w' True regardless of input
+        Replacing string within the file name whilist checking for parsed arguements to alter the method
         """
         def change():
             try:
+                
                 if parsed_args.whole:
-                    new_name = parsed_args.new_string + self.extension
+                    new_name = parsed_args.new_string
                 else:
-                    new_name = self.name.replace(parsed_args.old_string, parsed_args.new_string) + self.extension
-                os.rename(self.file, new_name)
+                    new_name = self.name.replace(parsed_args.old_string, parsed_args.new_string)
+                os.rename(self.file, new_name + self.extension)
+
                 if self.file != new_name:
-                    print(f"'{self.file}' -> '{new_name}'")
+                    print(f"'{self.file}' -> '{new_name}{self.extension}'")
                     return True
+
             except FileExistsError:
-                print(f"'{self.file}' -> '{new_name}' : file already exists. name not changed")
-                return False
+
+                if parsed_args.numbering == True:
+                    duplicate = 1
+                    while duplicate < 999:
+                        try:
+                            os.rename(self.file, new_name + f" ({duplicate})" + self.extension)
+                            print(f"'{self.file}' -> '{new_name} ({duplicate}){self.extension}'")
+                            return True
+                        except FileExistsError:
+                            duplicate += 1
+
+            print(f"'{self.file}' -> '{new_name}' : File already exists. Name not changed")
+            return False
 
         if parsed_args.exact and parsed_args.old_string == parsed_args.new_string:
             return change()
@@ -43,22 +54,24 @@ class FileRename():
 def parsing_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("path", help="Targeted path")
+    parser.add_argument("path", help="Targeted folder path")
 
-    parser.add_argument("old_string", help ="String that is to be replaced")
+    parser.add_argument("old_string", help ="Old string that is to be replaced")
     
-    parser.add_argument("new_string", help ="String to replace with")
+    parser.add_argument("new_string", help ="New string to replace with")
 
     parser.add_argument('-e', '--exact', action='store_true',
-                    help='Specifies whether the file name is to be exact match')
+                    help='Specifies whether the full file name is to be exact match')
     parser.add_argument('-w', '--whole', action='store_true',
-                    help='Specifies whether the file name is to be fully replaced if any part is a match')
+                    help='Specifies whether the file name is to be fully replaced with new string if any part is a match')
+    parser.add_argument('-n', '--numbering', action='store_true',
+                    help='Attempts to sequentially number the files if a file with that name already exists')
     
     return parser.parse_args()
 
 class Main():
     """
-    Application start and working directory set up
+    Application start and working folder directory set up
     """
     parsed_args = parsing_args()
     path = parsed_args.path
@@ -72,7 +85,7 @@ class Main():
         method = " as whole new name for any match with old string"
     else:
         method = ""
-    print(f"replacing string '{parsed_args.old_string}' with '{parsed_args.new_string}'{method}\n...\nreplacing:")
+    print(f"Renaming string '{parsed_args.old_string}' with '{parsed_args.new_string}'{method}\n...\nRenaming:")
 
     pass_count = 0
     fail_count = 0
@@ -83,7 +96,8 @@ class Main():
         elif status == False:
             fail_count += 1
     
-    print(f"...\nreplaced total of {pass_count} files. {fail_count} files failed")
+    print(f"...\nRenaming total of {pass_count} files. {fail_count} files failed")
 
 
-Main()
+if __name__ == "__main__":
+    Main()
