@@ -57,9 +57,9 @@ def parsing_args():
 
     parser.add_argument("path", help="Targeted folder path")
 
-    parser.add_argument("old_string", help ="Old string that is to be replaced")
-    
-    parser.add_argument("new_string", help ="New string to replace with")
+    parser.add_argument("old_string", default=None, help ="Old string that is to be replaced. Optional only if --excel is parsed")
+        
+    parser.add_argument("new_string", default=None, help ="New string to replace with. Optional only if --excel is parsed")
 
     parser.add_argument('-e', '--exact', action='store_true',
                     help='Specifies whether the full file name is to be exact match')
@@ -67,7 +67,7 @@ def parsing_args():
                     help='Specifies whether the file name is to be fully replaced with new string if any part is a match')
     parser.add_argument('-n', '--numbering', action='store_true',
                     help='Attempts to sequentially number the files if a file with that name already exists')
-    
+
     return parser.parse_args()
 
 def main():
@@ -75,19 +75,11 @@ def main():
     Application start and working folder directory set up
     """
     parsed_args = parsing_args()
-    path = parsed_args.path
-    
-    try:
-        if not os.path.isabs(path):
-            path = os.path.join(os.path.dirname(__file__), path)
-    except FileNotFoundError:
-        print(f"Path '{parsed_args.path}'' is not found")
-    parsed_args.path = path
 
     os.chdir(parsed_args.path)
     files = os.listdir(parsed_args.path)
 
-    print(f"...\nftwo found {len(files)} in {path}")
+    print(f"...\nftwo found {len(files)} in {parsed_args.path}")
     if parsed_args.exact:
         method = " for full name exact match only"
     elif parsed_args.whole:
