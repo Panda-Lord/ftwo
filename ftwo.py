@@ -76,8 +76,8 @@ def main():
     """
     parsed_args = parsing_args()
 
-    os.chdir(parsed_args.path)
-    files = os.listdir(parsed_args.path)
+    os.chdir(r"{}".format(parsed_args.path))
+    files = os.listdir(".")
 
     print(f"...\nftwo found {len(files)} in {parsed_args.path}")
     if parsed_args.exact:
