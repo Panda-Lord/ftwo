@@ -10,21 +10,22 @@ class FileRename():
     """
     File renaming class.
     """
-    def __init__(self, file):
+    def __init__(self, file, parsed_args):
         self.file = file
         self.name, self.extension = os.path.splitext(self.file)
+        self.parsed_args = parsed_args
 
-    def change_name(self, parsed_args):
+    def change_name(self):
         """
         Replacing string within the file name whilist checking for parsed arguements to alter the method
         """
         def change():
             try:
                 
-                if parsed_args.whole:
-                    new_name = parsed_args.new_string
+                if self.parsed_args.whole:
+                    new_name = self.parsed_args.new_string
                 else:
-                    new_name = self.name.replace(parsed_args.old_string, parsed_args.new_string)
+                    new_name = self.name.replace(self.parsed_args.old_string, self.parsed_args.new_string)
                 os.rename(self.file, new_name + self.extension)
 
                 if self.file != new_name:
@@ -33,7 +34,7 @@ class FileRename():
 
             except FileExistsError:
 
-                if parsed_args.numbering == True:
+                if self.parsed_args.numbering == True:
                     duplicate = 1
                     while duplicate < 999:
                         try:
@@ -46,9 +47,9 @@ class FileRename():
             print(f"'{self.file}' -> '{new_name}' : File already exists. Name not changed")
             return False
 
-        if parsed_args.exact and parsed_args.old_string == parsed_args.new_string:
+        if self.parsed_args.exact and self.parsed_args.old_string == self.parsed_args.new_string:
             return change()
-        elif parsed_args.old_string in self.file:
+        elif self.parsed_args.old_string in self.file:
             return change()
 
 def parsing_args():
@@ -69,14 +70,22 @@ def parsing_args():
     
     return parser.parse_args()
 
-class Main():
+def main():
     """
     Application start and working folder directory set up
     """
     parsed_args = parsing_args()
     path = parsed_args.path
-    os.chdir(path)
-    files = os.listdir(path)
+    
+    try:
+        if not os.path.isabs(path):
+            path = os.path.join(os.path.dirname(__file__), path)
+    except FileNotFoundError:
+        print(f"Path '{parsed_args.path}'' is not found")
+    parsed_args.path = path
+
+    os.chdir(parsed_args.path)
+    files = os.listdir(parsed_args.path)
 
     print(f"...\nftwo found {len(files)} in {path}")
     if parsed_args.exact:
@@ -90,14 +99,14 @@ class Main():
     pass_count = 0
     fail_count = 0
     for file in files:
-        status = FileRename(file).change_name(parsed_args)
+        status = FileRename(file, parsed_args).change_name()
         if status == True:
             pass_count += 1
         elif status == False:
             fail_count += 1
     
-    print(f"...\nRenaming total of {pass_count} files. {fail_count} files failed")
+    print(f"...\nRenamed total of {pass_count} files. {fail_count} files failed")
 
 
 if __name__ == "__main__":
-    Main()
+    main()
