@@ -1,5 +1,5 @@
 # ftwo
-Simple command line windows file renamer in Python. The idea behind this is similar to Excel 'find and replace', to replace every matching string within the specified range and replace it with a new string.
+Simple command line windows file renamer in Python. The idea behind this is similar to Excel 'find and replace', to find every matching string within the specified range and replace it with a new string.
 
 Please note, extension of the file will not be replaced. It is simply removed and then added back on to the new name to avoid this.
 Where a file name already existed, or has been created in the process, duplicates will not be touched. See numbering option to change this.
